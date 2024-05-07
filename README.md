@@ -9,3 +9,8 @@ I plan on using this site to showcase my work
 [Solar TV fix](/pages/solartv.md)
 
 [Custom Controller Build](/pages/controller.md)
+
+[octoprint in docker for ochestration](/pages/octodocker.md)
+
+
+#### Checkout projects I'm involved in
