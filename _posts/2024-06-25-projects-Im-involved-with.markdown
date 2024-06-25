@@ -1,18 +1,3 @@
-# Keith Matthews
-
-I wear a lot of hats and have a vast array of skills
-
-I plan on using this site to showcase my work
-
-#### Checkout some of my recent projects
-
-[Solar TV fix](/pages/solartv.md)
-
-[Custom Controller Build](/pages/controller.md)
-
-[octoprint in docker for ochestration](/pages/octodocker.md)
-
-
 #### Checkout projects I'm involved in
 
 Robo Ruckus, I have asssited with testing, and development of alternative robotics platforms. I have also run many public displays of the robo ruckus games
