@@ -90,7 +90,7 @@ Ansible: (Per <https://www.ansible.com/>) "Ansible is an open source IT automati
 
 ##### Diagram of network:
 
-![image](</_site/assets/images/ceph lab diagram.svg>)
+![alt text]({{ site.url }}{{ site.baseurl }}/images/ceph lab diagram.svg)
 
 ### Results:
 
