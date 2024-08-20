@@ -1,4 +1,362 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-06-25T13:57:25-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Keith Matthews</title><subtitle>This is a site I plan on using to showcase my work and projects im involved with.</subtitle><entry><title type="html">Controller</title><link href="http://localhost:4000/2024/06/25/controller.html" rel="alternate" type="text/html" title="Controller" /><published>2024-06-25T00:00:00-07:00</published><updated>2024-06-25T00:00:00-07:00</updated><id>http://localhost:4000/2024/06/25/controller</id><content type="html" xml:base="http://localhost:4000/2024/06/25/controller.html"><![CDATA[<h2 id="custom-hid-device-design">Custom HID device design</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-08-20T12:14:59-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Keith Matthews</title><subtitle>This is a site I plan on using to showcase my work and projects im involved with.</subtitle><entry><title type="html">Ceph Ansible Lab</title><link href="http://localhost:4000/2024/08/20/Ceph-Ansible-Lab.html" rel="alternate" type="text/html" title="Ceph Ansible Lab" /><published>2024-08-20T00:00:00-07:00</published><updated>2024-08-20T00:00:00-07:00</updated><id>http://localhost:4000/2024/08/20/Ceph-Ansible-Lab</id><content type="html" xml:base="http://localhost:4000/2024/08/20/Ceph-Ansible-Lab.html"><![CDATA[<h3 id="goal">Goal:</h3>
+
+<p>Follow along with a recent Network Chuck video on Ceph Clustering but use Ansible as much as possible to implement the lab. Follow along with his setup instructions but use ansible where possible to provision and configure machines.</p>
+
+<h3 id="definitions">Definitions:</h3>
+
+<p>Ceph: (Per <a href="https://ceph.io/en/">https://ceph.io/en/</a>) “Ceph is an open-source, distributed storage system”</p>
+
+<p>Ansible: (Per <a href="https://www.ansible.com/">https://www.ansible.com/</a>) “Ansible is an open source IT automation engine that automates provisioning, configuration management, application deployment, orchestration, and many other IT processes. It is free to use, and the project benefits from the experience and intelligence of its thousands of contributors.”</p>
+
+<h3 id="planned-steps-for-lab">Planned Steps for lab:</h3>
+
+<ol>
+  <li>
+    <p>Provision Virtual Machines</p>
+
+    <ol>
+      <li>
+        <p>follow the included spreadsheet</p>
+      </li>
+      <li>
+        <p>install operating system to each machine per diagram, run updates</p>
+      </li>
+      <li>
+        <p>setup default user on each machine and import GitHub ssh keys for that user, the keithm username with a simple password to get started and will not be online until ready to deploy new credentials via ansible. Use a secure pasword for the machine that will be running ansible playbooks against other hosts/</p>
+      </li>
+      <li>
+        <p>setup host-names and IP addresses for each host.</p>
+      </li>
+      <li>
+        <p>setup ssh connection between the machine that will be the ansible host (ubuntu-server6) and all the CEPH workers/ansible targets (this will require you turn on ssh password connection briefly. turn this back off when done)</p>
+      </li>
+      <li>
+        <p>once all the basic provisioning is complete, turn off the 3 physical machines, and take a snapshot of the VM’s, these will be used while testing the ansible implementation to prevent unintended data loss</p>
+      </li>
+    </ol>
+  </li>
+</ol>
+
+<table>
+  <thead>
+    <tr>
+      <th>server NUM</th>
+      <th>Host OS</th>
+      <th>Host Hardware</th>
+      <th>Hostname</th>
+      <th>Ethernet Adapter</th>
+      <th>IP address</th>
+      <th>added storage</th>
+      <th>roles</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>server 1:</strong></td>
+      <td><strong>ubuntu 22.04</strong></td>
+      <td>VM, 2GB RAM, 2 Core</td>
+      <td>ubuntu-server1</td>
+      <td>enp0s3</td>
+      <td><strong>192.168.86.101</strong></td>
+      <td>iscsi1, iscsi2</td>
+      <td>ansible target, testing: ceph manager final: ceph worker</td>
+    </tr>
+    <tr>
+      <td><strong>server 2:</strong></td>
+      <td><strong>ubuntu 22.04</strong></td>
+      <td>VM, 2 GB RAM, 2 Core</td>
+      <td>ubuntu-server2</td>
+      <td>enp0s3</td>
+      <td><strong>192.168.86.102</strong></td>
+      <td>iscsi3</td>
+      <td>ansible target, ceph worker</td>
+    </tr>
+    <tr>
+      <td><strong>server 3:</strong></td>
+      <td><strong>ubuntu 22.04</strong></td>
+      <td>Zimaboard 832</td>
+      <td>ubuntu-server3</td>
+      <td>enp0s2  enp0s3    (dhcp)</td>
+      <td><strong>192.168.86.103</strong></td>
+      <td>iscsi4, 500gb ssd, 500gb hdd</td>
+      <td>ansible target, ceph manager/worker</td>
+    </tr>
+    <tr>
+      <td><strong>server 4:</strong></td>
+      <td><strong>ubuntu 20.04</strong></td>
+      <td>Raspberry Pi4</td>
+      <td>ubuntu-server4</td>
+      <td>eth0</td>
+      <td><strong>192.168.86.104</strong></td>
+      <td>iscsi5</td>
+      <td>ansible target, ceph worker</td>
+    </tr>
+    <tr>
+      <td><strong>server 5:</strong></td>
+      <td><strong>ubuntu 20.04</strong></td>
+      <td>Raspberry Pi 3</td>
+      <td>ubuntu-server5</td>
+      <td>eth0</td>
+      <td><strong>192.168.86.105</strong></td>
+      <td>iscsi6</td>
+      <td>ansible target, ceph worker</td>
+    </tr>
+    <tr>
+      <td><strong>server 6:</strong></td>
+      <td><strong>ubuntu 24.04</strong></td>
+      <td>VM, 4 GB RAM, 4 Core</td>
+      <td>ubuntu-server6</td>
+      <td> </td>
+      <td><strong>192.168.86.106</strong></td>
+      <td>N/A</td>
+      <td>ansible controller</td>
+    </tr>
+  </tbody>
+</table>
+
+<ol>
+  <li>
+    <p>provision ISCSI on NAS ( TrueNAS-scale ) per the below list (I don’t have any external drives to use for this project) ISCSI drives are sufficient to test with and adds the challenge of setting up the drives on each host.</p>
+
+    <ol>
+      <li>
+        <p>iscsi1 - 200gb  VM1</p>
+      </li>
+      <li>
+        <p>iscsi2 - 100gb VM1</p>
+      </li>
+      <li>
+        <p>iscsi3 - 100gb Pi4</p>
+      </li>
+      <li>
+        <p>iscsi4 - 100gb Pi3</p>
+      </li>
+      <li>
+        <p>iscsi5 - 120gb VM2</p>
+      </li>
+      <li>
+        <p>iscsi6 - 85gb VM2</p>
+      </li>
+    </ol>
+  </li>
+  <li>
+    <p>setup HAPac2 Mikrotik router to get physical machines on the network, This is also going to be a useful tool to diagnose network issues as they occur. refer to lab network diagram for network layout. In my case the network is not ideal for lab work but its what I’ve got</p>
+  </li>
+  <li>
+    <p>learn how to complete the following steps with ansible</p>
+
+    <ol>
+      <li>
+        <p>run updates and upgrades</p>
+      </li>
+      <li>
+        <p>setup a new user on all hosts with unique, strong passwords. delete bad password user.</p>
+      </li>
+      <li>
+        <p>setup ssh as root (modify /etc/sshd.config) add root ssh key from ubuntu-server3 to all hosts (per network chuck ceph video though this is insecure as far as I know)</p>
+      </li>
+      <li>
+        <p>mount iscsi drives on all systems</p>
+      </li>
+      <li>
+        <p>prep drives (not the drive with the host os)</p>
+
+        <ul>
+          <li>
+            <p>wipe out the disk (sgdisk –zap-all /dev/sd_ )</p>
+          </li>
+          <li>
+            <p>wipe the file system (wipefs)</p>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <p>install dependent software on each system</p>
+
+        <ul>
+          <li>
+            <p>docker</p>
+          </li>
+          <li>
+            <p>lvm2 (should already be installed)</p>
+          </li>
+          <li>
+            <p>open-iscsi (only needed in the case your using iscsi drives in the cluster)</p>
+          </li>
+          <li>
+            <p>timedatectl status needs to be accurate (NTP synchronized and UTC time on all servers)</p>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <p>prep storage for ceph usage on all hosts</p>
+      </li>
+      <li>
+        <p>set var for ceph_release</p>
+      </li>
+      <li>
+        <p>install cephadm and make executeable after pulling down ceph repo to root user on</p>
+      </li>
+      <li>
+        <p>cephadm bootstrap –mon-ip (ip address of manager)</p>
+      </li>
+      <li>
+        <p>setup mon’s (these are monitors or managers of the cluster. you need a few of these for it to have proper redundancy)</p>
+      </li>
+      <li>
+        <p>add osd’s (these are our drives essentially as I understand it)</p>
+      </li>
+    </ol>
+  </li>
+  <li>
+    <p>once setup, play around with ceph, look at metrics, setup cephfs</p>
+  </li>
+</ol>
+
+<h5 id="diagram-of-network">Diagram of network:</h5>
+
+<p><img src="http://localhost:4000/images/ceph lab diagram.svg" alt="ceph lab plan" /></p>
+
+<h3 id="results">Results:</h3>
+
+<p>Overall I achieved my goals for this lab.</p>
+
+<p>I think I got a better idea on using ansible to provision machines with software and setup basics stuff. I also learned about stuff that I will need to learn to get better at all of this.
+those tools include:</p>
+
+<ul>
+  <li>
+    <p>Key Management using Hashi-corp Vault, 1password, Bitwarden or Vaultwarden</p>
+  </li>
+  <li>
+    <p>Cloud Init</p>
+  </li>
+  <li>
+    <p>Teraform (IAC)</p>
+  </li>
+  <li>
+    <p>Using ceph and understanding how it is used out in the wild.</p>
+  </li>
+  <li>
+    <p>Virt-Manager for Linux based virtual machine management, specifically on remote hosts.</p>
+  </li>
+  <li>
+    <p>understanding how ansible variables work and how they’re pulled into a playbook. I mostly understood this but there’s a lot more there to learn. Looks like there is a vs-code extension that could help with this called Ansible Variable Lookup though I haven’t used this yet.</p>
+  </li>
+</ul>
+
+<p>A list of stuff I learned while completing this lab</p>
+
+<ul>
+  <li>
+    <p>Setup TrueNAS served iscsi drives</p>
+  </li>
+  <li>
+    <p>Using 1password CLI in tandem with bash scripting</p>
+  </li>
+  <li>
+    <p>When a guide or documentation recommends opening up a root terminal before making a change there is probably a good reason for it</p>
+  </li>
+  <li>
+    <p>PAM module and Yubi-key setup for a second factor on Linux</p>
+  </li>
+  <li>
+    <p>Ansible</p>
+
+    <ul>
+      <li>
+        <p>setup inventory files with hosts, host specific vars, and setting up nested group inventories</p>
+      </li>
+      <li>
+        <p>using ansible vault files for playbook vars, calling specific vars in a loop, and other tasks for setting up users with secure credentials</p>
+      </li>
+      <li>
+        <p>Ansible-Playbooks to:</p>
+
+        <ul>
+          <li>
+            <p>run updates</p>
+          </li>
+          <li>
+            <p>install software</p>
+          </li>
+          <li>
+            <p>install docker</p>
+          </li>
+          <li>
+            <p>install software that isn’t already in apts default repos</p>
+          </li>
+          <li>
+            <p>set user time to all use UTC and ensure NTP time is enabled</p>
+          </li>
+          <li>
+            <p>setup users with secure passwords that are stored at rest in encrypted vaults.</p>
+          </li>
+          <li>
+            <p>create ssh keys and import them to all hosts so the ansible machine will always have access to those machines</p>
+          </li>
+          <li>
+            <p>remove users that are on the systems</p>
+          </li>
+          <li>
+            <p>pull in iscsi drives and mount them in the file system (this step the mount part specifically may have been what messed up the raspberry pi’s)</p>
+          </li>
+          <li>
+            <p>format specific drives as specified by the host in the inventory file this could probably have been done better but it was towards the end of the project and I was just wanting to blast though.</p>
+          </li>
+          <li>
+            <p>I messed around a bit with crowdsec, I think I have a good idea on what it does but it was distracting me from finishing the project so I put it to the side. Probably worth it to circle back on this.</p>
+          </li>
+          <li>
+            <p>Install cephadm thought I think next time I will change the work flow to actually using cephadm from the machine that it is installed on That would have saved me a ton of time though the real answer is figure out ceph-ansible.</p>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <p>Setup ansible.cfg</p>
+      </li>
+      <li>
+        <p>learn how to work with ansible-lint even though it sometimes doesn’t make much sense.</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>bash scripting</p>
+  </li>
+  <li>
+    <p>gpg generally and as a part of a script</p>
+  </li>
+  <li>
+    <p>documentation and pre-planing/diagramming a network</p>
+  </li>
+</ul>
+
+<p>I looked into the ceph-ansible tool and I struggled for 3 days to understand how to use it. at that point I chose to simply follow along with the Network Chuck video when it came to the steps included in actualy installing ceph on all the prepared hosts. I think that I need to re-approach that particular task with fresh eyes in a month or two. The final results of all this setup was a working ceph cluster though with a few detraction’s. for some reason, even though I was able to confirm that the drives were wiped and had nothing on them and they should have been visible to the cluster, the two raspberry pi devices did not want to play nice. They were able to join the cluster but they were not able to share their drives with the cluster. I couldn’t figure this out and Im going to chock it up to while it may be possible to use raspberry pi’s with ceph it is likely very unstable and probably shouldn’t be attempted in anything resembling production. An additional problem was the pi 3 on average took about 2-3 times as long to run any given command. Once setup cephadm was fairly straight forward to use. I was able to use the cephadm command line tool to bring in other hosts and I was also able to do that task with the dashboard that was setup using cephadm. As I said in the things I learned I think that I should have thought of the flow of this lab as though I had two admins. one doing the ansible side of things and one responsible for administering ceph. this would have the ansible host setup all hosts and got them prepped to be managed by the ceph administrator. This way the ceph admin would get keys to login to the ceph machine where they could have done the administration from. These two people could defiantly be the same person filling two different roles but if I had thought of things like this the workflow would have made a lot more sense. below is a diagram of this changed workflow.</p>
+
+<p><img src="http://localhost:4000/images/ceph_lab_diagram_post_lab_edit.png" alt="Ceph Lab post build" /></p>
+
+<h3 id="things-to-do-next-time">Things to do next time:</h3>
+
+<ul>
+  <li>
+    <p>setup remote hosts targeted by anisble via tail-scale</p>
+  </li>
+  <li>
+    <p>scripts for setup should be applicable to different networks and built in a way that makes them scale-able</p>
+  </li>
+  <li>
+    <p>use a key-management utility</p>
+  </li>
+  <li>
+    <p>update and configure Mikrotik router using ansible</p>
+  </li>
+  <li>
+    <p>use more hosts</p>
+  </li>
+  <li>
+    <p>do not use raspberry pi’s for this</p>
+  </li>
+</ul>]]></content><author><name></name></author><summary type="html"><![CDATA[Goal:]]></summary></entry><entry><title type="html">Controller</title><link href="http://localhost:4000/2024/06/25/controller.html" rel="alternate" type="text/html" title="Controller" /><published>2024-06-25T00:00:00-07:00</published><updated>2024-06-25T00:00:00-07:00</updated><id>http://localhost:4000/2024/06/25/controller</id><content type="html" xml:base="http://localhost:4000/2024/06/25/controller.html"><![CDATA[<h2 id="custom-hid-device-design">Custom HID device design</h2>
 
 <p>This project was focused on designing and building a custom controller for use at my job and to learn how to use PCB design software.</p>
 

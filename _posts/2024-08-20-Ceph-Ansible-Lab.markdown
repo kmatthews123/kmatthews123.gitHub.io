@@ -5,6 +5,7 @@ Follow along with a recent Network Chuck video on Ceph Clustering but use Ansibl
 ### Definitions:
 
 Ceph: (Per <https://ceph.io/en/>) "Ceph is an open-source, distributed storage system"
+
 Ansible: (Per <https://www.ansible.com/>) "Ansible is an open source IT automation engine that automates provisioning, configuration management, application deployment, orchestration, and many other IT processes. It is free to use, and the project benefits from the experience and intelligence of its thousands of contributors."
 
 ### Planned Steps for lab:
@@ -23,14 +24,14 @@ Ansible: (Per <https://www.ansible.com/>) "Ansible is an open source IT automati
 
     6.  once all the basic provisioning is complete, turn off the 3 physical machines, and take a snapshot of the VM's, these will be used while testing the ansible implementation to prevent unintended data loss
 
-| server NUM    | Host OS               | Host Hardware        | Hostname       | Ethernet Adapter   | IP address         | added storage                                              | roles                                                    |
-| ------------- | --------------------- | -------------------- | -------------- | ------------------ | ------------------ | ---------------------------------------------------------- | -------------------------------------------------------- |
-| **server 1:** | \*\*ubuntu 22.04 \*\* | VM, 2GB RAM, 2 Core  | ubuntu-server1 | enp0s3             | **192.168.86.101** | iscsi1, iscsi2                                             | ansible target, testing: ceph manager final: ceph worker |
-| **server 2**  | **ubuntu 22.04**      | VM, 2 GB RAM, 2 Core | ubuntu-server2 | enp0s3             | **192.168.86.102** | iscsi3                                                     | ansible target, ceph worker                              |
-| **server 3**  | \*\*ubuntu 22.04 \*\* | Zimaboard 832        | ubuntu-server3 | enp0s2enp0s3(dhcp) | **192.168.86.103** | iscsi4, 500gb ssd, 500gb hdd                               | ansible target, ceph manager/worker                      |
-| **server 4**  | \*\*ubuntu 20.04 \*\* | Raspberry Pi4        | ubuntu-server4 | eth0               | **192.168.86.104** | iscsi5                                                     | ansible target, ceph worker                              |
-| **server 5**  | **ubuntu 20.04 pi3**  | Raspberry Pi 3       | ubuntu-server5 | eth0               | **192.168.86.105** | iscsi6                                                     | ansible target, ceph worker                              |
-| **server 6**  | ubuntu 24.04          | VM, 4 GB RAM, 4 Core | ubuntu-server6 |                    | **192.168.86.106** | (map in network share for ansible playbooks added to host) | ansible controller                                       |
+| server NUM    | Host OS           | Host Hardware        | Hostname       | Ethernet Adapter         | IP address         | added storage                | roles                                                    |
+| ------------- | ----------------- | -------------------- | -------------- | ------------------------ | ------------------ | ---------------------------- | -------------------------------------------------------- |
+| **server 1:** | **ubuntu 22.04**  | VM, 2GB RAM, 2 Core  | ubuntu-server1 | enp0s3                   | **192.168.86.101** | iscsi1, iscsi2               | ansible target, testing: ceph manager final: ceph worker |
+| **server 2:** | **ubuntu 22.04**  | VM, 2 GB RAM, 2 Core | ubuntu-server2 | enp0s3                   | **192.168.86.102** | iscsi3                       | ansible target, ceph worker                              |
+| **server 3:** | **ubuntu 22.04**  | Zimaboard 832        | ubuntu-server3 | enp0s2  enp0s3    (dhcp) | **192.168.86.103** | iscsi4, 500gb ssd, 500gb hdd | ansible target, ceph manager/worker                      |
+| **server 4:** | **ubuntu 20.04**  | Raspberry Pi4        | ubuntu-server4 | eth0                     | **192.168.86.104** | iscsi5                       | ansible target, ceph worker                              |
+| **server 5:** | **ubuntu 20.04**  | Raspberry Pi 3       | ubuntu-server5 | eth0                     | **192.168.86.105** | iscsi6                       | ansible target, ceph worker                              |
+| **server 6:** | **ubuntu 24.04**  | VM, 4 GB RAM, 4 Core | ubuntu-server6 |                          | **192.168.86.106** | N/A                          | ansible controller                                       |
 
 1.  provision ISCSI on NAS ( TrueNAS-scale ) per the below list (I don't have any external drives to use for this project) ISCSI drives are sufficient to test with and adds the challenge of setting up the drives on each host.
 
@@ -90,7 +91,7 @@ Ansible: (Per <https://www.ansible.com/>) "Ansible is an open source IT automati
 
 ##### Diagram of network:
 
-![alt text]({{ site.url }}{{ site.baseurl }}/images/ceph lab diagram.svg)
+![ceph lab plan]({{ site.url }}{{ site.baseurl }}/images/ceph lab diagram.svg)
 
 ### Results:
 
@@ -165,7 +166,7 @@ A list of stuff I learned while completing this lab
 
 I looked into the ceph-ansible tool and I struggled for 3 days to understand how to use it. at that point I chose to simply follow along with the Network Chuck video when it came to the steps included in actualy installing ceph on all the prepared hosts. I think that I need to re-approach that particular task with fresh eyes in a month or two. The final results of all this setup was a working ceph cluster though with a few detraction's. for some reason, even though I was able to confirm that the drives were wiped and had nothing on them and they should have been visible to the cluster, the two raspberry pi devices did not want to play nice. They were able to join the cluster but they were not able to share their drives with the cluster. I couldn't figure this out and Im going to chock it up to while it may be possible to use raspberry pi's with ceph it is likely very unstable and probably shouldn't be attempted in anything resembling production. An additional problem was the pi 3 on average took about 2-3 times as long to run any given command. Once setup cephadm was fairly straight forward to use. I was able to use the cephadm command line tool to bring in other hosts and I was also able to do that task with the dashboard that was setup using cephadm. As I said in the things I learned I think that I should have thought of the flow of this lab as though I had two admins. one doing the ansible side of things and one responsible for administering ceph. this would have the ansible host setup all hosts and got them prepped to be managed by the ceph administrator. This way the ceph admin would get keys to login to the ceph machine where they could have done the administration from. These two people could defiantly be the same person filling two different roles but if I had thought of things like this the workflow would have made a lot more sense. below is a diagram of this changed workflow.
 
-&#x20;![image](/_site/assets/images/ceph_lab_diagram_post_lab_edit.png)
+![Ceph Lab post build]({{ site.url }}{{ site.baseurl }}/images/ceph_lab_diagram_post_lab_edit.png)
 
 ### Things to do next time:
 
