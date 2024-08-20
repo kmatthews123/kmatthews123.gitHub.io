@@ -1,3 +1,5 @@
+
+
 ### Goal:
 
 Follow along with a recent Network Chuck video on Ceph Clustering but use Ansible as much as possible to implement the lab. Follow along with his setup instructions but use ansible where possible to provision and configure machines.
@@ -7,6 +9,13 @@ Follow along with a recent Network Chuck video on Ceph Clustering but use Ansibl
 Ceph: (Per <https://ceph.io/en/>) "Ceph is an open-source, distributed storage system"
 
 Ansible: (Per <https://www.ansible.com/>) "Ansible is an open source IT automation engine that automates provisioning, configuration management, application deployment, orchestration, and many other IT processes. It is free to use, and the project benefits from the experience and intelligence of its thousands of contributors."
+
+### Code!
+
+Checkout the code I created and worked on to complete this project at my ansible github repo!
+
+<https://github.com/kmatthews123/ansible>
+
 
 ### Planned Steps for lab:
 
@@ -181,4 +190,3 @@ I looked into the ceph-ansible tool and I struggled for 3 days to understand how
 *   use more hosts
 
 *   do not use raspberry pi's for this
-

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-08-20T12:14:59-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Keith Matthews</title><subtitle>This is a site I plan on using to showcase my work and projects im involved with.</subtitle><entry><title type="html">Ceph Ansible Lab</title><link href="http://localhost:4000/2024/08/20/Ceph-Ansible-Lab.html" rel="alternate" type="text/html" title="Ceph Ansible Lab" /><published>2024-08-20T00:00:00-07:00</published><updated>2024-08-20T00:00:00-07:00</updated><id>http://localhost:4000/2024/08/20/Ceph-Ansible-Lab</id><content type="html" xml:base="http://localhost:4000/2024/08/20/Ceph-Ansible-Lab.html"><![CDATA[<h3 id="goal">Goal:</h3>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-08-20T14:05:07-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Keith Matthews</title><subtitle>This is a site I plan on using to showcase my work and projects im involved with.</subtitle><entry><title type="html">Ceph Ansible Lab</title><link href="http://localhost:4000/2024/08/20/Ceph-Ansible-Lab.html" rel="alternate" type="text/html" title="Ceph Ansible Lab" /><published>2024-08-20T00:00:00-07:00</published><updated>2024-08-20T00:00:00-07:00</updated><id>http://localhost:4000/2024/08/20/Ceph-Ansible-Lab</id><content type="html" xml:base="http://localhost:4000/2024/08/20/Ceph-Ansible-Lab.html"><![CDATA[<h3 id="goal">Goal:</h3>
 
 <p>Follow along with a recent Network Chuck video on Ceph Clustering but use Ansible as much as possible to implement the lab. Follow along with his setup instructions but use ansible where possible to provision and configure machines.</p>
 
@@ -7,6 +7,12 @@
 <p>Ceph: (Per <a href="https://ceph.io/en/">https://ceph.io/en/</a>) “Ceph is an open-source, distributed storage system”</p>
 
 <p>Ansible: (Per <a href="https://www.ansible.com/">https://www.ansible.com/</a>) “Ansible is an open source IT automation engine that automates provisioning, configuration management, application deployment, orchestration, and many other IT processes. It is free to use, and the project benefits from the experience and intelligence of its thousands of contributors.”</p>
+
+<h3 id="code">Code!</h3>
+
+<p>Checkout the code I created and worked on to complete this project at my ansible github repo!</p>
+
+<p><a href="https://github.com/kmatthews123/ansible">https://github.com/kmatthews123/ansible</a></p>
 
 <h3 id="planned-steps-for-lab">Planned Steps for lab:</h3>
 
@@ -356,7 +362,7 @@ those tools include:</p>
   <li>
     <p>do not use raspberry pi’s for this</p>
   </li>
-</ul>]]></content><author><name></name></author><summary type="html"><![CDATA[Goal:]]></summary></entry><entry><title type="html">Controller</title><link href="http://localhost:4000/2024/06/25/controller.html" rel="alternate" type="text/html" title="Controller" /><published>2024-06-25T00:00:00-07:00</published><updated>2024-06-25T00:00:00-07:00</updated><id>http://localhost:4000/2024/06/25/controller</id><content type="html" xml:base="http://localhost:4000/2024/06/25/controller.html"><![CDATA[<h2 id="custom-hid-device-design">Custom HID device design</h2>
+</ul>]]></content><author><name></name></author><summary type="html"><![CDATA[]]></summary></entry><entry><title type="html">Controller</title><link href="http://localhost:4000/2024/06/25/controller.html" rel="alternate" type="text/html" title="Controller" /><published>2024-06-25T00:00:00-07:00</published><updated>2024-06-25T00:00:00-07:00</updated><id>http://localhost:4000/2024/06/25/controller</id><content type="html" xml:base="http://localhost:4000/2024/06/25/controller.html"><![CDATA[<h2 id="custom-hid-device-design">Custom HID device design</h2>
 
 <p>This project was focused on designing and building a custom controller for use at my job and to learn how to use PCB design software.</p>
 
