@@ -34,11 +34,11 @@ Network Devices:
 - While I am in any machine, I fixed any minor configuration issues having to do with my access. on some machines I had set all sudo group members have no password access. this was an artifact of early experimentation with ansible on my part and was insecure. These problems have been rectified.
 
 --- 
+
 Now that the machines are all functional and able to talk together development of the ansible playbooks can begin.
 
 - Decide on structure of file system for machine that will run ansible playbooks. that looks like this
-  
-
+![tree output]({{ site.url }}{{ site.baseurl }}/images/ansible-patching-tree.png)
   
 - Develop Playbooks for development and production clusters. these will largely be the same but with different variables plugged in. They need to be two separate playbooks due to the different timelines each is run under. Cron jobs will be used to deploy playbooks on their schedules.
 - Build/use standard plays to run updates on remote Linux systems

@@ -100,7 +100,7 @@ Checkout the code I created and worked on to complete this project at my ansible
 
 ##### Diagram of network:
 
-![ceph lab plan]({{ site.url }}{{ site.baseurl }}/images/ceph lab diagram.svg)
+![test]({{ site.url }}{{ site.baseurl }}/images/ceph lab diagram.svg)
 
 ### Results:
 
