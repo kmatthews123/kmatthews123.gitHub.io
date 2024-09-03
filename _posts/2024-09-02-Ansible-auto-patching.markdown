@@ -15,17 +15,21 @@ Checkout the code associated with this project!
 
 ## list of machines
 
-Development:
+### Development
 
-- dev-nas1 (planned)
-- dev-compute1
-- dev-compute2
-- dev-gpu-compute1
-Production
-- prod-nas1
-- prod-playbook-runner-compute1
-- prod-compute2
-Network Devices:
+- dev-nas-1 (planned)
+- dev-compute-1
+- dev-compute-2
+- dev-gpu-compute-1
+
+### Production
+
+- prod-nas-1
+- prod-playbook-runner-compute-1
+- prod-compute-2
+
+### Network Devices
+
 - mikrotik1
 
 ## Steps to complete
@@ -38,7 +42,7 @@ Network Devices:
     - ssh public keys for the machine that will run the ansible playbooks
     - secure password (saved in Micro Space password vault)
     - ssh daemon needs to be restarted to apply changes
-- While I am in any machine, I fixed any minor configuration issues having to do with my access. on some machines I had set all sudo group members have no password access. this was an artifact of early experimentation with ansible on my part and was insecure. These problems have been rectified.
+- While I directly working on any device, I fixed any minor configuration issues having to do with my access. on some machines I had set all sudo group members have no password access. this was an artifact of early experimentation with ansible on my part and was insecure. These problems have been rectified.
 
 ---
 
@@ -50,9 +54,9 @@ Now that the machines are all functional and able to talk together development o
 - Develop Playbooks for development and production clusters. these will largely be the same but with different variables plugged in. They need to be two separate playbooks due to the different timelines each is run under. Cron jobs will be used to deploy playbooks on their schedules.
 - Build/use standard plays to run updates on remote Linux systems
 - get Cron jobs working
-  - Originally I was considering using a tool called semaphore UI primarily for the scheduling tools used to run ansible playbooks or other IAC tasks along with UI triggers and other things. this tool seems like the portainer of the ansible/terraform/opentofu world and while it looked neat and I will likely circle back to it at some point I decided that the management overhead for using this tool and getting it setup was more than I wanted to mess with at this point. Cron seems like plenty enough to run daily and weekly update/upgrade tasks. If I decide to move this all to semaphore-UI in the future there shouldn't be a ton of additional work to make that happen. 
+  - Originally I was considering using a tool called semaphore UI primarily for the scheduling tools used to run ansible playbooks or other IAC tasks along with UI triggers and other things. this tool seems like the portainer of the ansible/terraform/opentofu world and while it looked neat and I will likely circle back to it at some point I decided that the management overhead for using this tool and getting it setup was more than I wanted to mess with at this point. Cron seems like plenty enough to run daily and weekly update/upgrade tasks. If I decide to move this all to semaphore-UI in the future there shouldn't be a ton of additional work to make that happen.
   - This was pretty straight forward. I followed a guide from phoenix systems to setup crontab. I set it up to run a simple playbook once every couple of minutes and was able to observe logs being generated.
-  - The server running the ansible playbooks is on UTC time so I set the Cron jobs to run at 10:00 UTC which is around 2-3 in the morning in the pacific timezone where these servers exist so the updates don't interrupt others working in the micro space. 
+  - The server running the ansible playbooks is on UTC time so I set the Cron jobs to run at 10:00 UTC which is around 2-3 in the morning in the pacific timezone where these servers exist so the updates don't interrupt others working in the micro space.
   - The production machines will be at the same time but their Cron jobs will run on Sunday nights (this might change to Monday nights, need to talk with more experienced sys-admins about that)
 
 ### Add Logging functionality
@@ -61,25 +65,26 @@ Now that the machines are all functional and able to talk together development o
 - since all the servers run Debian the apt package manager was easy to setup and pull data from using the regex search function
 - the playbooks register the output of the update step and the check if a reboot is required and starts to work with that data.
   1. create a folder for the day the update runs in either the dev or prod folder
-  2. save a .log file to the local host with just the hostname number of upgraded, newly installed, removed, and held packages, and if the reboot_required file exists. 
+  2. save a .log file to the local host with just the hostname number of upgraded, newly installed, removed, and held packages, and if the reboot_required file exists.
   3. save a .vlog file to the local host with the entire standard output from ansible with the results of the update command.
   4. register the .log files saved to the local host to work with them via ansible
   5. echo the log file contents into a single file
   6. convert the log file into a string
   7. other processes are engaged. more on them shortly. after those steps are done the .log files get deleted but the .vlog files stay for later review of what was updated on remote systems since those packages are named.
-  - It should be noted that the logging steps almost all happen on the machine that runs all the ansible playbooks. While not implemented, this will likely make it easy to ship these log files off to a NAS that can archive them or use them as data points for Grafana. that is out of the scope of this whole thing but will be worked on later.
+- It should be noted that the logging steps almost all happen on the machine that runs all the ansible playbooks. While not implemented, this will likely make it easy to ship these log files off to a NAS that can archive them or use them as data points for Grafana. that is out of the scope of this whole thing but will be worked on later.
 
-- Add notifications
-  - This was much more simple than I expected. Since the members of the micro space use discord for general communications I wanted to implement daily notifications of what systems got updated and how many updates got deployed along with the information on what servers are due for a reboot due to kernel updates. 
-  - I setup a channel in the discord server and setup a simple webhook integration. copying over the link and then using the community.general.discord module allowed me to send the contents of the combined log file as an embedded message with all the info for all machines in the dev or production cluster. there is also some additional tweaks made to the simple webhook push to truncate the amount of characters (it seems there's a limit of 1000 characters per message. this could be negated by building a discord bot but that is out of scope at this time.)
-  - This webhook solution kind of just works and didn't need a ton in the way of configuration. the bulk of the challenge here was figuring out how to format the message and the logs in such a way that they were brief and to the point.
+### Add notifications
+
+- This was much more simple than I expected. Since the members of the micro space use discord for general communications I wanted to implement daily notifications of what systems got updated and how many updates got deployed along with the information on what servers are due for a reboot due to kernel updates.
+- I setup a channel in the discord server and setup a simple webhook integration. copying over the link and then using the community.general.discord module allowed me to send the contents of the combined log file as an embedded message with all the info for all machines in the dev or production cluster. there is also some additional tweaks made to the simple webhook push to truncate the amount of characters (it seems there's a limit of 1000 characters per message. this could be negated by building a discord bot but that is out of scope at this time.)
+- This webhook solution kind of just works and didn't need a ton in the way of configuration. the bulk of the challenge here was figuring out how to format the message and the logs in such a way that they were brief and to the point.
 
 ### Get Open Media Vault working
 
 - This was largely the same as running updates for everything else but with a few caveats
 - the main one was that the open media vault machine, while it contains the apt package manager, really relies on the `omv-upgrade` tool to run all necessary updates from the CLI or in an automated fashion. there may be an API but I don't think ansible has been regularly used with open media vault so I kinda had to figure this out on my own
 - What I figured out was that the `omv-upgrade` tool is used to upgrade the system and then `omv-salt deploy run --append-dirty` to apply the pending changes (that yellow banner that shows up at the top of the page any time you change something in open media vault)
-- I could possibly setup the OMV7 steps to reside inside the play to update the regular Linux hosts but that would have been much more invasive and would likely have required I test against real hosts which I'm trying to avoid with the production network as much as possible. 
+- I could possibly setup the OMV7 steps to reside inside the play to update the regular Linux hosts but that would have been much more invasive and would likely have required I test against real hosts which I'm trying to avoid with the production network as much as possible.
 - development for this portion was done on my local network targeting an OMV7 virtual machine
 
 ### Network devices
