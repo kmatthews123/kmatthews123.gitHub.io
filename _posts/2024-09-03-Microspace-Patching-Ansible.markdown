@@ -1,6 +1,6 @@
-# Ansible to Update the Micro Space
 
 ### Goals:
+
 - Create inventory of devices present in the micro space in development and production clusters
 - Run automated daily updates of development cluster of machines
 - Run automated once a week updates of production machines
@@ -8,6 +8,7 @@
 - notifications pushed to discord channel with stats on updates along with any required reboots of infrastructure
 
 ### list of machines:
+
 Development:
 	- dev-nas1 (planned)
 	- dev-compute1
@@ -21,6 +22,7 @@ Network Devices:
 	- mikrotik1
 
 ### Steps to complete:
+
 - the following needs to be true on all machines
 	- I need to be able to login using ssh
 	- The machine needs to have the borg user
@@ -36,7 +38,7 @@ Now that the machines are all functional and able to talk together development o
 
 - Decide on structure of file system for machine that will run ansible playbooks. that looks like this
   
-  ![[Pasted image 20240830214706.png]]
+
   
 - Develop Playbooks for development and production clusters. these will largely be the same but with different variables plugged in. They need to be two separate playbooks due to the different timelines each is run under. Cron jobs will be used to deploy playbooks on their schedules.
 - Build/use standard plays to run updates on remote Linux systems
