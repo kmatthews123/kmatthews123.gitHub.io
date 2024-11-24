@@ -1,4 +1,59 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2024-09-02T17:15:57-07:00</updated><id>/feed.xml</id><title type="html">Keith Matthews</title><subtitle>This is a site I plan on using to showcase my work and projects im involved with.</subtitle><entry><title type="html">Ansible Auto Patching</title><link href="/2024/09/02/Ansible-auto-patching.html" rel="alternate" type="text/html" title="Ansible Auto Patching" /><published>2024-09-02T00:00:00-07:00</published><updated>2024-09-02T00:00:00-07:00</updated><id>/2024/09/02/Ansible-auto-patching</id><content type="html" xml:base="/2024/09/02/Ansible-auto-patching.html"><![CDATA[<h3 id="goals">Goals:</h3>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-11-24T05:34:54+00:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Keith Matthews</title><subtitle>This is a site I plan on using to showcase my work and projects im involved with.</subtitle><entry><title type="html">Logs</title><link href="http://localhost:4000/2024/11/23/Logs.html" rel="alternate" type="text/html" title="Logs" /><published>2024-11-23T00:00:00+00:00</published><updated>2024-11-23T00:00:00+00:00</updated><id>http://localhost:4000/2024/11/23/Logs</id><content type="html" xml:base="http://localhost:4000/2024/11/23/Logs.html"><![CDATA[<h2 id="goal">Goal</h2>
+
+<p>As far as logging goes, I have largely left things to my fellows in the u-space. They have done some  excellent work with grafana and Prometheus to keep an eye on stats relevant to devices in our cluster. This includes scrolling logs for containers, network infrastructure, firewall events, and other types of logs. I find these logs to be very useful when it comes to tracing issues but not terribly useful for monitoring critical metrics such as ensuring updates, and checking in on disk utilization and system hardness.</p>
+
+<p>This movement from running logs to a daily report for select users helps me keep an eye on selected systems and Identify issues with systems in a more active way. I think that this helps prevent alert fatigue if the alerts are only once a day and critical. I think of it like reading the news.</p>
+
+<h2 id="checkout-the-code">Checkout the code!</h2>
+<ul>
+  <li><a href="https://github.com/kmatthews123/ansible/blob/main/Micro-Space/Playbooks/disk-utilization.yaml">File systems</a></li>
+  <li><a href="https://github.com/kmatthews123/ansible/blob/main/Micro-Space/Playbooks/lynis-run.yaml">Lynis</a></li>
+  <li>Ansible Auto Patching article <a href="https://kmatthews123.github.io/2024/09/02/Ansible-auto-patching.html">here</a></li>
+</ul>
+
+<h2 id="the-logs-im-targeting">The logs I’m targeting</h2>
+<p>The three logs I’m  generating right now are as follows</p>
+<ul>
+  <li>File system usage</li>
+  <li>hardening status</li>
+  <li>update status
+These three reports get pushed in different ways. For right now the File system usage and the hardening status reports get generated as needed. Ill probably move these into a once a week readout for review. I do want to use the hardening status report to inform setting up some more robust security settings on the servers we monitor. I also am sure that the file system usage can be monitored better by a smtp tool like cacti or grafana but I haven’t dug into how that works with alerting techniques like using webhooks to alert to issues with systems. For now here are my notes on these scripts.</li>
+</ul>
+
+<h3 id="file-system-usage">File system usage</h3>
+<p>This ansible script uses the pydf tool to run a check on all host systems targeted by ansible. the goal here is to identify any outliers with root file systems that are either getting full unusual quickly or that may not have their full logical volume provisioned like a file system that is 80% full but only has the first 100Gib of a 500Gib disk set up for the file system to use. This helps me as a system admin identify systems that are incorrectly provisioned so I can get in and solve the problem before they fill up and become a problem for users. It also helps me get in front of storage issues like NFS volumes for docker containers that are getting too full.</p>
+
+<p>The report for this command gets generated as an html document that encapsulates all systems. Im using the ansi2html python tool to convert all the readouts to a nice html file to be served.</p>
+
+<p><img src="http://localhost:4000/images/Screenshot from 2024-11-23 11-42-55.png" alt="test" /></p>
+
+<p>Truthfully this method is a bit of a hack. It relys on ansible.builtin.shell which is not the most clean way of running playbooks and is also probably less useful than active monitoring. This playbook is useful mostly for quick checks if you’ve got ansible up but no other monitoring.</p>
+
+<h3 id="system-hardening">System hardening</h3>
+<p>This playbook relies on the lynis software tool. I mostly plan on using this tool as a check on steps I take to harden servers using ansible. The other portion of its use will be to ensure systems managed by others but on systems I’m responsible for are adhering to a minimum level of security. I should probably look into ways to make the output a bit more brief for the security scan portion of this tool since I likely wont need all the recommended stuff that gets added and the links to remediation steps for when I run it against systems.</p>
+
+<p><img src="http://localhost:4000/images/Screenshot from 2024-11-23 18-24-51.png" alt="test" /></p>
+
+<p>This report usually gets generated as an ansi style message output by a command line. All I really do here is pipe it though a python tool to turn it into an html document with all the colors maintained.</p>
+
+<h3 id="daily-updates">Daily updates</h3>
+<p>This report is likely going to be tweaked a bit from my post on ansible updates. Mostly that change will be in a change on how the reports are generated. Currently, the combined log that gets pushed out informs the admin monitoring of updated packages and any systems that require reboots. While this is fine, my mentor pointed out to me that normally, the way these things are handled is that an alert will go to a communally monitored channel every day that things have gone well with whatever task. That task in this case is the update having run. If an admin wants more detail they can click that alert and be taken to a report. However, there is no action required. The other options are an alert that things did not go as expected and a relevant party should be notified that they need to attend to whatever did not go properly. The last option is that no alert is triggered. this is also relevant because if there is an alert that’s expected every day at 0900 but no alert is triggered, someone should probably go and investigate.</p>
+
+<p><img src="http://localhost:4000/images/Screenshot from 2024-11-23 19-08-55.png" alt="test" /></p>
+
+<p>Until I fix things I think this is a good general alert. It keeps me up to date and we don’t have as many folks with eyes on this infrastructure. I think that if this sort of tool gets implemented on the raspberry pi clubs proxmox cluster we will likely have to implement a more streamlined method.</p>]]></content><author><name></name></author><summary type="html"><![CDATA[]]></summary></entry><entry><title type="html">Reboot Play</title><link href="http://localhost:4000/2024/11/22/Reboot-Play.html" rel="alternate" type="text/html" title="Reboot Play" /><published>2024-11-22T00:00:00+00:00</published><updated>2024-11-22T00:00:00+00:00</updated><id>http://localhost:4000/2024/11/22/Reboot-Play</id><content type="html" xml:base="http://localhost:4000/2024/11/22/Reboot-Play.html"><![CDATA[<h2 id="goal">Goal</h2>
+
+<p>As part of my role maintaining systems in the microspace I created this playbook to automate the process of running daily updates against infrastructure and also sending notifications to a discord channel that I moniter. An important part of patching is updating Linux hosts to apply updated kernels.</p>
+
+<h2 id="execution">Execution</h2>
+
+<p>This playbook gets run manually by a system admin when they notice that one or several systems require a reboot. The playbook applys a serial restraint on the playbook to only execute reboots one system at a time with a 1 minute wait inbetween. While this probably doesn’t scale very well out to hundreds of systems, for now it works well to ensure systems hosting critical services in a swarm are not targeted all at once. Since the infrastructure Im keeping an eye on is also used by others in the u-space and eventually will also include services at the makerspace and for cascadeSTEAM Im planning for maintaining services as much as possible.</p>
+
+<h2 id="the-code">The code</h2>
+
+<p>The ansible script can be found <a href="https://github.com/kmatthews123/ansible/blob/main/Micro-Space/Playbooks/play-reboot-serial.yaml">here</a></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Goal]]></summary></entry><entry><title type="html">Ansible Auto Patching</title><link href="http://localhost:4000/2024/09/02/Ansible-auto-patching.html" rel="alternate" type="text/html" title="Ansible Auto Patching" /><published>2024-09-02T00:00:00+00:00</published><updated>2024-09-02T00:00:00+00:00</updated><id>http://localhost:4000/2024/09/02/Ansible-auto-patching</id><content type="html" xml:base="http://localhost:4000/2024/09/02/Ansible-auto-patching.html"><![CDATA[<h1 id="micro-space-ansible-setup">Micro Space Ansible Setup</h1>
+
+<h2 id="goals">Goals</h2>
 
 <ul>
   <li>Create inventory of devices present in the micro space in development and production clusters</li>
@@ -8,21 +63,37 @@
   <li>notifications pushed to discord channel with stats on updates along with any required reboots of infrastructure</li>
 </ul>
 
-<h3 id="list-of-machines">list of machines:</h3>
+<h2 id="code">Code</h2>
 
-<p>Development:
-	- dev-nas1 (planned)
-	- dev-compute1
-	- dev-compute2
-	- dev-gpu-compute1
-Production
-	- prod-nas1
-	- prod-playbook-runner-compute1
-	- prod-compute2
-Network Devices:
-	- mikrotik1</p>
+<p>Checkout the code associated with this project!
+<a href="https://github.com/kmatthews123/ansible">https://github.com/kmatthews123/ansible</a></p>
 
-<h3 id="steps-to-complete">Steps to complete:</h3>
+<h2 id="list-of-machines">list of machines</h2>
+
+<h3 id="development">Development</h3>
+
+<ul>
+  <li>dev-nas-1 (planned)</li>
+  <li>dev-compute-1</li>
+  <li>dev-compute-2</li>
+  <li>dev-gpu-compute-1</li>
+</ul>
+
+<h3 id="production">Production</h3>
+
+<ul>
+  <li>prod-nas-1</li>
+  <li>prod-playbook-runner-compute-1</li>
+  <li>prod-compute-2</li>
+</ul>
+
+<h3 id="network-devices">Network Devices</h3>
+
+<ul>
+  <li>mikrotik1</li>
+</ul>
+
+<h2 id="steps-to-complete">Steps to complete</h2>
 
 <ul>
   <li>the following needs to be true on all machines
@@ -39,7 +110,7 @@ Network Devices:
       </li>
     </ul>
   </li>
-  <li>While I am in any machine, I fixed any minor configuration issues having to do with my access. on some machines I had set all sudo group members have no password access. this was an artifact of early experimentation with ansible on my part and was insecure. These problems have been rectified.</li>
+  <li>While I directly working on any device, I fixed any minor configuration issues having to do with my access. on some machines I had set all sudo group members have no password access. this was an artifact of early experimentation with ansible on my part and was insecure. These problems have been rectified.</li>
 </ul>
 
 <hr />
@@ -49,7 +120,7 @@ Network Devices:
 <ul>
   <li>
     <p>Decide on structure of file system for machine that will run ansible playbooks. that looks like this
-<img src="/images/ansible-patching-tree.png" alt="tree output" /></p>
+<img src="http://localhost:4000/images/ansible-patching-tree.png" alt="tree output" /></p>
   </li>
   <li>Develop Playbooks for development and production clusters. these will largely be the same but with different variables plugged in. They need to be two separate playbooks due to the different timelines each is run under. Cron jobs will be used to deploy playbooks on their schedules.</li>
   <li>Build/use standard plays to run updates on remote Linux systems</li>
@@ -61,50 +132,55 @@ Network Devices:
       <li>The production machines will be at the same time but their Cron jobs will run on Sunday nights (this might change to Monday nights, need to talk with more experienced sys-admins about that)</li>
     </ul>
   </li>
-  <li>Add Logging functionality
-    <ul>
-      <li>the bulk of the playbooks to run these updates are tasks to properly complete the logging of the updates run on these servers.</li>
-      <li>since all the servers run Debian the apt package manager was easy to setup and pull data from using the regex search function</li>
-      <li>the playbooks register the output of the update step and the check if a reboot is required and starts to work with that data.
-        <ol>
-          <li>create a folder for the day the update runs in either the dev or prod folder</li>
-          <li>save a .log file to the local host with just the hostname number of upgraded, newly installed, removed, and held packages, and if the reboot_required file exists.</li>
-          <li>save a .vlog file to the local host with the entire standard output from ansible with the results of the update command.</li>
-          <li>register the .log files saved to the local host to work with them via ansible</li>
-          <li>echo the log file contents into a single file</li>
-          <li>convert the log file into a string</li>
-          <li>other processes are engaged. more on them shortly. after those steps are done the .log files get deleted but the .vlog files stay for later review of what was updated on remote systems since those packages are named.</li>
-        </ol>
-      </li>
-      <li>It should be noted that the logging steps almost all happen on the machine that runs all the ansible playbooks. While not implemented, this will likely make it easy to ship these log files off to a NAS that can archive them or use them as data points for Grafana. that is out of the scope of this whole thing but will be worked on later.</li>
-    </ul>
-  </li>
-  <li>Add notifications
-    <ul>
-      <li>This was much more simple than I expected. Since the members of the micro space use discord for general communications I wanted to implement daily notifications of what systems got updated and how many updates got deployed along with the information on what servers are due for a reboot due to kernel updates.</li>
-      <li>I setup a channel in the discord server and setup a simple webhook integration. copying over the link and then using the community.general.discord module allowed me to send the contents of the combined log file as an embedded message with all the info for all machines in the dev or production cluster. there is also some additional tweaks made to the simple webhook push to truncate the amount of characters (it seems there’s a limit of 1000 characters per message. this could be negated by building a discord bot but that is out of scope at this time.)</li>
-      <li>This webhook solution kind of just works and didn’t need a ton in the way of configuration. the bulk of the challenge here was figuring out how to format the message and the logs in such a way that they were brief and to the point.</li>
-    </ul>
-  </li>
-  <li>Get Open Media Vault working.
-    <ul>
-      <li>This was largely the same as running updates for everything else but with a few caveats</li>
-      <li>the main one was that the open media vault machine, while it contains the apt package manager, really relies on the <code class="language-plaintext highlighter-rouge">omv-upgrade</code> tool to run all necessary updates from the CLI or in an automated fashion. there may be an API but I don’t think ansible has been regularly used with open media vault so I kinda had to figure this out on my own</li>
-      <li>What I figured out was that the <code class="language-plaintext highlighter-rouge">omv-upgrade</code> tool is used to upgrade the system and then <code class="language-plaintext highlighter-rouge">omv-salt deploy run --append-dirty</code> to apply the pending changes (that yellow banner that shows up at the top of the page any time you change something in open media vault)</li>
-      <li>I could possibly setup the OMV7 steps to reside inside the play to update the regular Linux hosts but that would have been much more invasive and would likely have required I test against real hosts which I’m trying to avoid with the production network as much as possible.</li>
-      <li>development for this portion was done on my local network targeting an OMV7 virtual machine</li>
-    </ul>
-  </li>
-  <li>Network devices
-    <ul>
-      <li>I decided that with the progress other members of the micro space are making into logging with Grafana and specifically with that in conjunction with mikrotik devices, coupled with the fact that mikrotik devices are updated infrequently, I don’t think scheduled update and notification steps are necessary in the same way the Linux systems get daily package updates</li>
-      <li>I do have updates of the mikrotik infrastructure using ansible working so I think that the workflow there will either be using Grafana to notify when updates are available for those pieces of infrastructure and then one of the admins responsible for that equipment will either just apply updates via the mikrotik dashboard or they can login to the ansible playbook machine and manually run the update playbooks. this will need to be a thing that is done with care because updating the mikrotik equipment brings down the network the Micro Space runs in for 5-10 minutes which is rude</li>
-    </ul>
-  </li>
 </ul>
 
-<h3 id="conclusion">Conclusion</h3>
-<p>I learned a lot with this lab. I think that in the future, while all the logging stuff was/is very cool and does work, using tools like Prometheus and Grafana make more sense for alerting and there is likely a way to use those tools and their functions to more effectively do the logging and messaging than what I built here. That being said, I am really proud of this set of playbooks and I think it taught me a lot of valuable information that I can go on to use with ansible in the future and I got a better Idea of the bigger devops picture that exists. The update portion of this task is working and it is something that could be tied into with other sorts of tools down the line. running ansible playbooks from a dashboard based on different alerts to various sysadmins is a thing that is coming to the micro space.</p>]]></content><author><name></name></author><summary type="html"><![CDATA[Goals:]]></summary></entry><entry><title type="html">Ceph Ansible Lab</title><link href="/2024/08/20/Ceph-Ansible-Lab.html" rel="alternate" type="text/html" title="Ceph Ansible Lab" /><published>2024-08-20T00:00:00-07:00</published><updated>2024-08-20T00:00:00-07:00</updated><id>/2024/08/20/Ceph-Ansible-Lab</id><content type="html" xml:base="/2024/08/20/Ceph-Ansible-Lab.html"><![CDATA[<h3 id="goal">Goal:</h3>
+<h3 id="add-logging-functionality">Add Logging functionality</h3>
+
+<ul>
+  <li>the bulk of the playbooks to run these updates are tasks to properly complete the logging of the updates run on these servers.</li>
+  <li>since all the servers run Debian the apt package manager was easy to setup and pull data from using the regex search function</li>
+  <li>the playbooks register the output of the update step and the check if a reboot is required and starts to work with that data.
+    <ol>
+      <li>create a folder for the day the update runs in either the dev or prod folder</li>
+      <li>save a .log file to the local host with just the hostname number of upgraded, newly installed, removed, and held packages, and if the reboot_required file exists.</li>
+      <li>save a .vlog file to the local host with the entire standard output from ansible with the results of the update command.</li>
+      <li>register the .log files saved to the local host to work with them via ansible</li>
+      <li>echo the log file contents into a single file</li>
+      <li>convert the log file into a string</li>
+      <li>other processes are engaged. more on them shortly. after those steps are done the .log files get deleted but the .vlog files stay for later review of what was updated on remote systems since those packages are named.</li>
+    </ol>
+  </li>
+  <li>It should be noted that the logging steps almost all happen on the machine that runs all the ansible playbooks. While not implemented, this will likely make it easy to ship these log files off to a NAS that can archive them or use them as data points for Grafana. that is out of the scope of this whole thing but will be worked on later.</li>
+</ul>
+
+<h3 id="add-notifications">Add notifications</h3>
+
+<ul>
+  <li>This was much more simple than I expected. Since the members of the micro space use discord for general communications I wanted to implement daily notifications of what systems got updated and how many updates got deployed along with the information on what servers are due for a reboot due to kernel updates.</li>
+  <li>I setup a channel in the discord server and setup a simple webhook integration. copying over the link and then using the community.general.discord module allowed me to send the contents of the combined log file as an embedded message with all the info for all machines in the dev or production cluster. there is also some additional tweaks made to the simple webhook push to truncate the amount of characters (it seems there’s a limit of 1000 characters per message. this could be negated by building a discord bot but that is out of scope at this time.)</li>
+  <li>This webhook solution kind of just works and didn’t need a ton in the way of configuration. the bulk of the challenge here was figuring out how to format the message and the logs in such a way that they were brief and to the point.</li>
+</ul>
+
+<h3 id="get-open-media-vault-working">Get Open Media Vault working</h3>
+
+<ul>
+  <li>This was largely the same as running updates for everything else but with a few caveats</li>
+  <li>the main one was that the open media vault machine, while it contains the apt package manager, really relies on the <code class="language-plaintext highlighter-rouge">omv-upgrade</code> tool to run all necessary updates from the CLI or in an automated fashion. there may be an API but I don’t think ansible has been regularly used with open media vault so I kinda had to figure this out on my own</li>
+  <li>What I figured out was that the <code class="language-plaintext highlighter-rouge">omv-upgrade</code> tool is used to upgrade the system and then <code class="language-plaintext highlighter-rouge">omv-salt deploy run --append-dirty</code> to apply the pending changes (that yellow banner that shows up at the top of the page any time you change something in open media vault)</li>
+  <li>I could possibly setup the OMV7 steps to reside inside the play to update the regular Linux hosts but that would have been much more invasive and would likely have required I test against real hosts which I’m trying to avoid with the production network as much as possible.</li>
+  <li>development for this portion was done on my local network targeting an OMV7 virtual machine</li>
+</ul>
+
+<h3 id="network-devices-1">Network devices</h3>
+
+<ul>
+  <li>I decided that with the progress other members of the micro space are making into logging with Grafana and specifically with that in conjunction with mikrotik devices, coupled with the fact that mikrotik devices are updated infrequently, I don’t think scheduled update and notification steps are necessary in the same way the Linux systems get daily package updates</li>
+  <li>I do have updates of the mikrotik infrastructure using ansible working so I think that the workflow there will either be using Grafana to notify when updates are available for those pieces of infrastructure and then one of the admins responsible for that equipment will either just apply updates via the mikrotik dashboard or they can login to the ansible playbook machine and manually run the update playbooks. this will need to be a thing that is done with care because updating the mikrotik equipment brings down the network the Micro Space runs in for 5-10 minutes which is rude</li>
+</ul>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>I learned a lot with this lab. I think that in the future, while all the logging stuff was/is very cool and does work, using tools like Prometheus and Grafana make more sense for alerting and there is likely a way to use those tools and their functions to more effectively do the logging and messaging than what I built here. That being said, I am really proud of this set of playbooks and I think it taught me a lot of valuable information that I can go on to use with ansible in the future and I got a better Idea of the bigger devops picture that exists. The update portion of this task is working and it is something that could be tied into with other sorts of tools down the line. running ansible playbooks from a dashboard based on different alerts to various sysadmins is a thing that is coming to the micro space.</p>]]></content><author><name></name></author><summary type="html"><![CDATA[Micro Space Ansible Setup]]></summary></entry><entry><title type="html">Ceph Ansible Lab</title><link href="http://localhost:4000/2024/08/20/Ceph-Ansible-Lab.html" rel="alternate" type="text/html" title="Ceph Ansible Lab" /><published>2024-08-20T00:00:00+00:00</published><updated>2024-08-20T00:00:00+00:00</updated><id>http://localhost:4000/2024/08/20/Ceph-Ansible-Lab</id><content type="html" xml:base="http://localhost:4000/2024/08/20/Ceph-Ansible-Lab.html"><![CDATA[<h3 id="goal">Goal:</h3>
 
 <p>Follow along with a recent Network Chuck video on Ceph Clustering but use Ansible as much as possible to implement the lab. Follow along with his setup instructions but use ansible where possible to provision and configure machines.</p>
 
@@ -327,7 +403,7 @@ Network Devices:
 
 <h5 id="diagram-of-network">Diagram of network:</h5>
 
-<p><img src="/images/ceph lab diagram.svg" alt="test" /></p>
+<p><img src="http://localhost:4000/images/ceph lab diagram.svg" alt="test" /></p>
 
 <h3 id="results">Results:</h3>
 
@@ -445,7 +521,7 @@ those tools include:</p>
 
 <p>I looked into the ceph-ansible tool and I struggled for 3 days to understand how to use it. at that point I chose to simply follow along with the Network Chuck video when it came to the steps included in actualy installing ceph on all the prepared hosts. I think that I need to re-approach that particular task with fresh eyes in a month or two. The final results of all this setup was a working ceph cluster though with a few detraction’s. for some reason, even though I was able to confirm that the drives were wiped and had nothing on them and they should have been visible to the cluster, the two raspberry pi devices did not want to play nice. They were able to join the cluster but they were not able to share their drives with the cluster. I couldn’t figure this out and Im going to chock it up to while it may be possible to use raspberry pi’s with ceph it is likely very unstable and probably shouldn’t be attempted in anything resembling production. An additional problem was the pi 3 on average took about 2-3 times as long to run any given command. Once setup cephadm was fairly straight forward to use. I was able to use the cephadm command line tool to bring in other hosts and I was also able to do that task with the dashboard that was setup using cephadm. As I said in the things I learned I think that I should have thought of the flow of this lab as though I had two admins. one doing the ansible side of things and one responsible for administering ceph. this would have the ansible host setup all hosts and got them prepped to be managed by the ceph administrator. This way the ceph admin would get keys to login to the ceph machine where they could have done the administration from. These two people could defiantly be the same person filling two different roles but if I had thought of things like this the workflow would have made a lot more sense. below is a diagram of this changed workflow.</p>
 
-<p><img src="/images/ceph_lab_diagram_post_lab_edit.png" alt="Ceph Lab post build" /></p>
+<p><img src="http://localhost:4000/images/ceph_lab_diagram_post_lab_edit.png" alt="Ceph Lab post build" /></p>
 
 <h3 id="things-to-do-next-time">Things to do next time:</h3>
 
@@ -468,13 +544,13 @@ those tools include:</p>
   <li>
     <p>do not use raspberry pi’s for this</p>
   </li>
-</ul>]]></content><author><name></name></author><summary type="html"><![CDATA[]]></summary></entry><entry><title type="html">Controller</title><link href="/2024/06/25/controller.html" rel="alternate" type="text/html" title="Controller" /><published>2024-06-25T00:00:00-07:00</published><updated>2024-06-25T00:00:00-07:00</updated><id>/2024/06/25/controller</id><content type="html" xml:base="/2024/06/25/controller.html"><![CDATA[<h2 id="custom-hid-device-design">Custom HID device design</h2>
+</ul>]]></content><author><name></name></author><summary type="html"><![CDATA[]]></summary></entry><entry><title type="html">Controller</title><link href="http://localhost:4000/2024/06/25/controller.html" rel="alternate" type="text/html" title="Controller" /><published>2024-06-25T00:00:00+00:00</published><updated>2024-06-25T00:00:00+00:00</updated><id>http://localhost:4000/2024/06/25/controller</id><content type="html" xml:base="http://localhost:4000/2024/06/25/controller.html"><![CDATA[<h2 id="custom-hid-device-design">Custom HID device design</h2>
 
 <p>This project was focused on designing and building a custom controller for use at my job and to learn how to use PCB design software.</p>
 
-<p><a href="https://github.com/kmatthews123/Controller">GitHub - kmatthews123/Controller: Controller designed by me with code from Joystick_XL library</a></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Custom HID device design This project was focused on designing and building a custom controller for use at my job and to learn how to use PCB design software. GitHub - kmatthews123/Controller: Controller designed by me with code from Joystick_XL library]]></summary></entry><entry><title type="html">Octodocker</title><link href="/2024/06/25/octodocker.html" rel="alternate" type="text/html" title="Octodocker" /><published>2024-06-25T00:00:00-07:00</published><updated>2024-06-25T00:00:00-07:00</updated><id>/2024/06/25/octodocker</id><content type="html" xml:base="/2024/06/25/octodocker.html"><![CDATA[<h2 id="why-use-docker-for-3d-printing">Why use docker for 3d printing?</h2>
+<p><a href="https://github.com/kmatthews123/Controller">GitHub - kmatthews123/Controller: Controller designed by me with code from Joystick_XL library</a></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Custom HID device design This project was focused on designing and building a custom controller for use at my job and to learn how to use PCB design software. GitHub - kmatthews123/Controller: Controller designed by me with code from Joystick_XL library]]></summary></entry><entry><title type="html">Octodocker</title><link href="http://localhost:4000/2024/06/25/octodocker.html" rel="alternate" type="text/html" title="Octodocker" /><published>2024-06-25T00:00:00+00:00</published><updated>2024-06-25T00:00:00+00:00</updated><id>http://localhost:4000/2024/06/25/octodocker</id><content type="html" xml:base="http://localhost:4000/2024/06/25/octodocker.html"><![CDATA[<h2 id="why-use-docker-for-3d-printing">Why use docker for 3d printing?</h2>
 
-<p>Several years ago, I was told about docker while commiserating with a freind about the lack of raspberry pi devices or at least their massivly blown up price during the pandemic. My friend pointed out docker and it opened a world up. after lots of hours watching youtube videos, digging into guides and setup documentation and poking at some basic containers using the single rasperry pi I had in my posession I started my project. At the time I had a few things already running on that pi and I was going to use it to also host octoprint to help me in managing my ender 3 pro. While this would have been a good enough use case and I will get into some of the things I had to figure out to make this single install work, it became even more important when I gained an additional 3 3d printers from a friend. these machines, to be easily operated and maintaind also needed octoprint running. this was the true benifit of running octoprint in a container. Because this application is really light, while it is easier to install directly to an sd card and run it bare metal on a raspberry pi both because it requries connecting to usb and because it greatly simplifies connection to a camera for streaming (more on that later). From what I understand you can hook more than one usb up to a pi running octoprint bare metal but I havent seen many people use this method. I assume it is because octoprint really seems to be designed to run one printer. One rasperry pi for one printer at a time when a medium spec pi 4 was hanging out in the 200$ range if you could find them at all was a really steap ask. In retrospect a Pi 3 would have been cheaper and have run just fine but again, more on that later. When I set to adding the additional 3 printers to my fleet of machines, I started with first converting my original octoprint container from running off of a docker “one liner” and building a docker compose file for it. This process was really straight forward because the docker hub page for the octoprint app has a compose file right there. The things I had to add and modify were easy enough for the first machine, simply probe for and pass though the usb device and also give the web portal its own defined port. This process would become more dificult as I duplicated the docker compose file for the usb pass though which I will get to in a bit. the ports being duplicated was easy enough and I made things simple by using 4 adjacent ports with numbers 1-4 in order of the printers. As far as the usb connections go, the printers, running all at the same time are not capable of saturating the usb bus, and the main problem was that as you plug things in and un-plug things, the linux operating system will change the port numbers for each individual device. This is an issue because the decleration for which usb device bets passed into the docker container is static. it cannot tell the diffrence between two diffrent usb inputs as far as I can tell. I have a feeling that I could possibly figure out how to script a way of polling the 3d printer for some kind of finger print at the time of spinning up the docker container to grab the right usb device automaticly but I havent figured that out yet. for now what that means is each /dev/ttyusb gets passed into its own container correctly by simply shutting down all containers, unpluging all usb devices from the host system, and then adding the devices and starting the containers that corespond with that printer 1 at a time. this way the usb inputs are enumerated correctly to give each instance of octoprint the correct machine. this is a pretty hacky way of doing things but unless multiple 3d printers get unpluged at the same time it is pretty functional once setup.</p>]]></content><author><name></name></author><summary type="html"><![CDATA[Why use docker for 3d printing?]]></summary></entry><entry><title type="html">Projects Im Involved With</title><link href="/2024/06/25/projects-Im-involved-with.html" rel="alternate" type="text/html" title="Projects Im Involved With" /><published>2024-06-25T00:00:00-07:00</published><updated>2024-06-25T00:00:00-07:00</updated><id>/2024/06/25/projects-Im-involved-with</id><content type="html" xml:base="/2024/06/25/projects-Im-involved-with.html"><![CDATA[<h4 id="checkout-projects-im-involved-in">Checkout projects I’m involved in</h4>
+<p>Several years ago, I was told about docker while commiserating with a freind about the lack of raspberry pi devices or at least their massivly blown up price during the pandemic. My friend pointed out docker and it opened a world up. after lots of hours watching youtube videos, digging into guides and setup documentation and poking at some basic containers using the single rasperry pi I had in my posession I started my project. At the time I had a few things already running on that pi and I was going to use it to also host octoprint to help me in managing my ender 3 pro. While this would have been a good enough use case and I will get into some of the things I had to figure out to make this single install work, it became even more important when I gained an additional 3 3d printers from a friend. these machines, to be easily operated and maintaind also needed octoprint running. this was the true benifit of running octoprint in a container. Because this application is really light, while it is easier to install directly to an sd card and run it bare metal on a raspberry pi both because it requries connecting to usb and because it greatly simplifies connection to a camera for streaming (more on that later). From what I understand you can hook more than one usb up to a pi running octoprint bare metal but I havent seen many people use this method. I assume it is because octoprint really seems to be designed to run one printer. One rasperry pi for one printer at a time when a medium spec pi 4 was hanging out in the 200$ range if you could find them at all was a really steap ask. In retrospect a Pi 3 would have been cheaper and have run just fine but again, more on that later. When I set to adding the additional 3 printers to my fleet of machines, I started with first converting my original octoprint container from running off of a docker “one liner” and building a docker compose file for it. This process was really straight forward because the docker hub page for the octoprint app has a compose file right there. The things I had to add and modify were easy enough for the first machine, simply probe for and pass though the usb device and also give the web portal its own defined port. This process would become more dificult as I duplicated the docker compose file for the usb pass though which I will get to in a bit. the ports being duplicated was easy enough and I made things simple by using 4 adjacent ports with numbers 1-4 in order of the printers. As far as the usb connections go, the printers, running all at the same time are not capable of saturating the usb bus, and the main problem was that as you plug things in and un-plug things, the linux operating system will change the port numbers for each individual device. This is an issue because the decleration for which usb device bets passed into the docker container is static. it cannot tell the diffrence between two diffrent usb inputs as far as I can tell. I have a feeling that I could possibly figure out how to script a way of polling the 3d printer for some kind of finger print at the time of spinning up the docker container to grab the right usb device automaticly but I havent figured that out yet. for now what that means is each /dev/ttyusb gets passed into its own container correctly by simply shutting down all containers, unpluging all usb devices from the host system, and then adding the devices and starting the containers that corespond with that printer 1 at a time. this way the usb inputs are enumerated correctly to give each instance of octoprint the correct machine. this is a pretty hacky way of doing things but unless multiple 3d printers get unpluged at the same time it is pretty functional once setup.</p>]]></content><author><name></name></author><summary type="html"><![CDATA[Why use docker for 3d printing?]]></summary></entry><entry><title type="html">Projects Im Involved With</title><link href="http://localhost:4000/2024/06/25/projects-Im-involved-with.html" rel="alternate" type="text/html" title="Projects Im Involved With" /><published>2024-06-25T00:00:00+00:00</published><updated>2024-06-25T00:00:00+00:00</updated><id>http://localhost:4000/2024/06/25/projects-Im-involved-with</id><content type="html" xml:base="http://localhost:4000/2024/06/25/projects-Im-involved-with.html"><![CDATA[<h4 id="checkout-projects-im-involved-in">Checkout projects I’m involved in</h4>
 
 <p>Robo Ruckus, I have asssited with testing, and development of alternative robotics platforms. I have also run many public displays of the robo ruckus games
 <a href="https://www.roboruckus.com/">Robo Ruckus</a></p>
@@ -486,7 +562,7 @@ those tools include:</p>
 <a href="https://github.com/btc-raspberrypiclub/jeopardy">Jeopardy</a></p>
 
 <p>Ruby based Discord bot. this discord bot acts as the frontend for a Large Language model and allows users in a discord channel to interact with an “AI”. I assisted by testing the bot, and also adding the “nice message” function
-<a href="https://github.com/joshbuker/discord-bot">Ruby Bot</a></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Checkout projects I’m involved in Robo Ruckus, I have asssited with testing, and development of alternative robotics platforms. I have also run many public displays of the robo ruckus games Robo Ruckus Big Boat Energy, This project I worked on with a freind in bellingham, we designed and built a boat platform that can follow waypoint missions with minimal intervention. Boatymcboatface Raspberry Pi Club Jeopardy game, I assisted this group of BTC students by coming up a plethora of linux themed jeopardy questions. I also assisted with a hardware implementation to make deploying the game at an event. Jeopardy Ruby based Discord bot. this discord bot acts as the frontend for a Large Language model and allows users in a discord channel to interact with an “AI”. I assisted by testing the bot, and also adding the “nice message” function Ruby Bot]]></summary></entry><entry><title type="html">Solartv</title><link href="/2024/06/25/solartv.html" rel="alternate" type="text/html" title="Solartv" /><published>2024-06-25T00:00:00-07:00</published><updated>2024-06-25T00:00:00-07:00</updated><id>/2024/06/25/solartv</id><content type="html" xml:base="/2024/06/25/solartv.html"><![CDATA[<p>Fixing a solar tv</p>
+<a href="https://github.com/joshbuker/discord-bot">Ruby Bot</a></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Checkout projects I’m involved in Robo Ruckus, I have asssited with testing, and development of alternative robotics platforms. I have also run many public displays of the robo ruckus games Robo Ruckus Big Boat Energy, This project I worked on with a freind in bellingham, we designed and built a boat platform that can follow waypoint missions with minimal intervention. Boatymcboatface Raspberry Pi Club Jeopardy game, I assisted this group of BTC students by coming up a plethora of linux themed jeopardy questions. I also assisted with a hardware implementation to make deploying the game at an event. Jeopardy Ruby based Discord bot. this discord bot acts as the frontend for a Large Language model and allows users in a discord channel to interact with an “AI”. I assisted by testing the bot, and also adding the “nice message” function Ruby Bot]]></summary></entry><entry><title type="html">Solartv</title><link href="http://localhost:4000/2024/06/25/solartv.html" rel="alternate" type="text/html" title="Solartv" /><published>2024-06-25T00:00:00+00:00</published><updated>2024-06-25T00:00:00+00:00</updated><id>http://localhost:4000/2024/06/25/solartv</id><content type="html" xml:base="http://localhost:4000/2024/06/25/solartv.html"><![CDATA[<p>Fixing a solar tv</p>
 
 <p>This is a brief test article to explain how I was able to “fix” a “solar tv” that would normally be sold in Africa as best as I can tell. This tv has a drm lockout feature that uses the designers 12-volt power supply from a solar array and solar charge controller as the key to unlock the drm. As best as I can tell, either the 12-volt power supply has some kind of signal in the power that the tv can decode or there is a different cable used to unlock the tv assuming you have paid the company. For multiple reasons this bothers me so I took a bit of time to figure out what was going on here and how I could defeat it. I have a feeling that these TVs were purchased on Ali-express or a similar kind of site as it does not seem these things are sold normally in the US. I did not purchase these TVs but inherited them from a makerspace I was involved with, the story I got is someone got them off the back of a truck at burning man.</p>
 
