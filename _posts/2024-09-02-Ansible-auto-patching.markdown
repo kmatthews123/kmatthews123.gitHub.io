@@ -1,3 +1,12 @@
+---
+layout: default
+title: "Automating microspace updates"
+---
+
+Development of an ansible playbook to update the systems in the microspace
+
+<!--more-->
+
 # Micro Space Ansible Setup
 
 ## Goals

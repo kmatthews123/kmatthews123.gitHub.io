@@ -1,4 +1,12 @@
+---
+layout: default
+title: "Ceph Ansible"
+---
 
+deploying a ceph cluster using ansible
+
+
+<!--more-->
 
 ### Goal:
 

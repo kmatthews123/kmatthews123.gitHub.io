@@ -1,7 +1,12 @@
+---
+layout: default
+title: "Custom HID Device Design"
+---
 
-## Custom HID device design
+I built a couple of controllers to controll robots!
 
 
+<!--more-->
 
 This project was focused on designing and building a custom controller for use at my job and to learn how to use PCB design software.
 

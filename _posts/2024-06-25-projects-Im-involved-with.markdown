@@ -1,4 +1,15 @@
-#### Checkout projects I'm involved in
+---
+layout: default
+title: "Other projects Ive worked on"
+---
+
+
+Check out these cool projects Ive helped or contributed to
+
+
+<!--more-->
+
+# Checkout projects I'm involved in
 
 Robo Ruckus, I have asssited with testing, and development of alternative robotics platforms. I have also run many public displays of the robo ruckus games
 [Robo Ruckus](https://www.roboruckus.com/)

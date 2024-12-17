@@ -1,4 +1,12 @@
+---
+layout: default
+title: "LOGS!"
+---
 
+Creating a series of ansible playbooks to log stuff
+
+
+<!--more-->
 
 ## Goal
 

@@ -1,3 +1,12 @@
+---
+layout: default
+title: "Break the raid"
+---
+
+The process of breaking some proxmox servers out of their raid configuration
+
+<!--more-->
+
 ## The goal
 
 Get the raid large pools we created for proxmox on the hosts mss1 and mss2 broken out without breaking everything. 

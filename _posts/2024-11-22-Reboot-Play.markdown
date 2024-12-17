@@ -1,3 +1,12 @@
+---
+layout: default
+title: "Reboot plays"
+---
+
+An ansible playbook to reboot servers that need it
+
+<!--more-->
+
 ## Goal
 
 As part of my role maintaining systems in the microspace I created this playbook to automate the process of running daily updates against infrastructure and also sending notifications to a discord channel that I monitor. An important part of patching is updating Linux hosts to apply updated kernels.
